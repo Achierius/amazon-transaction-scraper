@@ -42,6 +42,7 @@ def parse_amazon_transactions_for_year(driver, filter : OrderFilter):
     order_summaries = collect_order_summaries(driver, filter.year, order_count)
     order_summaries = filter_order_summaries(order_summaries, filter)
     if not order_summaries:
+        # TODO logging
         print(f"No orders found in given date-range: {filter.start_date} to {filter.end_date}")
         return []
     orders = scrape_invoices(driver, order_summaries)

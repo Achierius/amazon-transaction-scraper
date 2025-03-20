@@ -109,9 +109,6 @@ def _parse_user_arguments(args: Dict[str, Any]) -> UserConfiguration:
     else:
         start_date = datetime.strptime(f"{year}-01-01", "%Y-%m-%d")
         end_date = datetime.strptime(f"{year}-12-31", "%Y-%m-%d")
-
-    print(start_date)
-    print(end_date)
     
     return UserConfiguration(
         filter=OrderFilter(

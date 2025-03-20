@@ -14,7 +14,7 @@ import os
 import re
 import traceback
 
-from .datatypes import Item, Order
+from .datatypes import Item, Order, CardCharge
 from .config import *
 
 def parse_order_row(row, shipping_date: Optional[datetime]) -> Item:
@@ -76,6 +76,37 @@ def parse_order_bundle(bundle) -> List[Item]:
     return items
 
 
+def parse_card_charges(driver) -> List[CardCharge]:
+    # There's a table which contains "Credit Card transactions" and the transactions table
+    # Then the transactions table itself
+    # We *could* just look for everything that has "ending in" but I'd hate to accidentally pick up
+    # something from an order description
+    try:
+        transactions_table = driver.find_element(By.XPATH,
+                                                     ("//*[contains(text(), 'Credit Card transactions')]/ancestor::tbody[1]"
+                                                      "//tbody[.//text()[contains(., 'ending in')]]"))
+    except NoSuchElementException:
+        # This happens e.g. for "Subscribe and Save" orders which have yet to charge your card.
+        return []
+
+    charges = []
+    rows = transactions_table.find_elements(By.XPATH, ".//tr")
+    for row in rows:
+        text = row.text
+        card_digits = re.search(r'ending in (\d\d\d\d)', text).group(1)
+        amount = float(re.search(r'\$(\d+.\d\d)', text).group(1))
+        date_text = re.search(r'(\S+ \d+, 20\d\d)', text).group(1)
+        date = datetime.strptime(date_text, '%B %d, %Y')
+        
+        charge = CardCharge(
+            card_digits=card_digits,
+            date=date,
+            amount=amount
+        )
+        charges.append(charge)
+    return charges
+
+
 def parse_invoice(driver, url) -> Order:
     wait = WebDriverWait(driver, TIMEOUT_S)
     driver.get(url)
@@ -109,11 +140,14 @@ def parse_invoice(driver, url) -> Order:
     for bundle in order_bundles:
         all_items.extend(parse_order_bundle(bundle))
 
+    charges = parse_card_charges(driver)
+
     return Order(
         order_date=order_date,
         order_number=order_number,
         total=total,
         sub_total=sub_total,
         items=all_items,
-        url=url
+        url=url,
+        charges=charges,
     )
