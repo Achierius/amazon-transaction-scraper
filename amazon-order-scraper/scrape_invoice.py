@@ -53,7 +53,7 @@ def parse_order_row(driver, row):
     )
 
 
-def parse_order_page(driver, url) -> Order:
+def parse_invoice(driver, url) -> Order:
     wait = WebDriverWait(driver, TIMEOUT_S)
     driver.get(url)
 
