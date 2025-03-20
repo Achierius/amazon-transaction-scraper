@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List
+from rich.progress import Progress
 
 import os
 import re
@@ -43,23 +44,25 @@ def parse_amazon_transactions_for_year(driver, year : str):
     )
     order_count = int(re.search(r'(\d+)\s*orders', orders_text_element.text).group(1))
 
-    # Each order page shows us up to 10 orders at a time, loop over them and process reports one at a time
-    all_orders = []
-    orders_processed = 0
-    while orders_processed < order_count:
-        page_url = f"https://www.amazon.com/your-orders/orders?timeFilter=year-{year}&startIndex={orders_processed}"
-        transaction_urls = scrape_transaction_urls(driver, page_url)
+    with Progress() as progress:
+        status_bar = progress.add_task("[blue]Scraping Amazon transactions...",
+                                       total=order_count)
 
-        # TODO clean up
-        # invoice_orders = [parse_order_page(driver, url) for url in transaction_urls]
-        invoice_orders = []
-        for url in transaction_urls:
-            print(f"  ... parsing {url}")
-            invoice_orders.append(parse_order_page(driver, url))
+        # Each order page shows us up to 10 orders at a time, loop over them and process reports one at a time
+        all_orders = []
+        orders_processed = 0
+        while orders_processed < order_count:
+            page_url = f"https://www.amazon.com/your-orders/orders?timeFilter=year-{year}&startIndex={orders_processed}"
+            transaction_urls = scrape_transaction_urls(driver, page_url)
 
-        orders_processed += len(invoice_orders)
-        all_orders.extend(invoice_orders)
+            invoice_orders = []
+            for url in transaction_urls:
+                # print(f"  ... parsing {url}") # TODO proper logging
+                invoice_orders.append(parse_order_page(driver, url))
+                progress.update(status_bar, advance=1)
 
-        # TODO proper logging
-        print(f"... {orders_processed} transactions scraped ...")
+            orders_processed += len(invoice_orders)
+            all_orders.extend(invoice_orders)
+        assert progress.finished
+
     return all_orders
