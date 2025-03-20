@@ -1,10 +1,15 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 import os
 import pickle
 import tempfile
+
+from .config import *
 
 def make_headless_driver():
     options = webdriver.ChromeOptions()
@@ -35,9 +40,17 @@ def get_amazon_login_from_driver(driver) -> str:
     temp_dir = tempfile.mkdtemp()
     cookie_file = os.path.join(temp_dir, "amazon_cookies.pkl")
     try:
-        driver.get("https://www.amazon.com/your-orders/orders") # generic orders page, forces login)
-        # TODO automatically detect when login is complete
-        input("Please log in to Amazon and press Enter after you are fully logged in...")
+        driver.get("https://www.amazon.com/your-orders/orders") # generic orders page, forces login
+        
+        if MANUAL_LOGIN_CONFIRMATION:
+            input("Please log in to Amazon and press Enter after you are fully logged in...")
+        else:
+            print("Please log in to Amazon. Waiting for login to complete...")
+            # Wait for the "Your Orders" heading to appear, which indicates successful login
+            WebDriverWait(driver, LOGIN_TIMEOUT_S).until(
+                EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Your Orders')]"))
+            )
+        
         with open(cookie_file, "wb") as f:
             pickle.dump(driver.get_cookies(), f)
     finally:
