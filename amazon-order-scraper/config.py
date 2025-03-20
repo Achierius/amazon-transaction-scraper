@@ -10,6 +10,7 @@ from datetime import datetime
 TIMEOUT_S = 20
 LOGIN_TIMEOUT_S = 300
 MANUAL_LOGIN_CONFIRMATION = False
+EXCLUDE_INVOICES_WITHOUT_CREDIT_CARD_CHARGE = True
 
 # --- Runtime configuration ---
 

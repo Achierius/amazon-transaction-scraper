@@ -2,7 +2,7 @@ from rich.progress import Progress
 
 from .scrape_order_list import load_order_page_and_get_order_count_for_year, scrape_order_summaries
 from .scrape_invoice import parse_invoice
-from .config import OrderFilter
+from .config import OrderFilter, EXCLUDE_INVOICES_WITHOUT_CREDIT_CARD_CHARGE
 
 def collect_order_summaries(driver, year : str, order_count : int):
     all_summaries = []
@@ -30,8 +30,11 @@ def scrape_invoices(driver, order_summaries):
                                        total=len(order_summaries))
 
         for summary in order_summaries:
-            parsed_orders.append(parse_invoice(driver, summary.invoice_url))
+            order = parse_invoice(driver, summary.invoice_url)
             progress.update(status_bar, advance=1)
+            if EXCLUDE_INVOICES_WITHOUT_CREDIT_CARD_CHARGE and not order.charges:
+                continue
+            parsed_orders.append(order)
         assert progress.finished
     return parsed_orders
 
