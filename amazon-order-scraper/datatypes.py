@@ -2,6 +2,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
+@dataclass
+class CardCharge:
+    card_digits: str
+    date: datetime
+    amount: float
+
+    def __str__(self):
+        return f"Charged ...{self.card_digits} ${self.amount:.2f} on {self.date.strftime('%Y-%m-%d')}"
+
 
 @dataclass
 class Item:
@@ -25,8 +34,9 @@ class Order:
     order_number: str
     total: float
     sub_total: float
-    items: List[Item]
     url: str # TODO we can just get this from the order_number
+    items: List[Item]
+    charges: List[CardCharge]
 
     def __str__(self):
         order_str = (
@@ -35,10 +45,16 @@ class Order:
             f"Order Date: {self.order_date.strftime('%Y-%m-%d')}\n"
             f"Order Total: ${self.total:.2f}\n"
             f"Sub-Total: ${self.sub_total:.2f}\n"
-            f"Items:"
         )
+        if not self.charges:
+            order_str += "Charges: N/A\n"
+        else:
+            order_str += "Charges:\n"
+            for charge in self.charges:
+                order_str +=  f"  {str(charge)}\n"
+        order_str += "Items:"
         for item in self.items:
-            order_str += f"  {str(item)}\n"
+            order_str += f"\n  {str(item)}"
         return order_str
 
 
