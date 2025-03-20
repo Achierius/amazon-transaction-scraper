@@ -23,6 +23,7 @@ class OrderFilter:
 @dataclass
 class UserConfiguration:
     filter : OrderFilter
+    print_results : bool
 
 def _get_raw_user_arguments() -> Dict[str, Any]:
     parser = argparse.ArgumentParser(
@@ -47,6 +48,10 @@ def _get_raw_user_arguments() -> Dict[str, Any]:
                             help="Start month in MM format (e.g., 01)")
     month_group.add_argument("--end-month", 
                             help="End month in MM format (e.g., 12)")
+    
+    # Output options
+    parser.add_argument("--print-results", action="store_true",
+                       help="Print results to stdout")
     
     args = parser.parse_args()
     
@@ -116,7 +121,8 @@ def _parse_user_arguments(args: Dict[str, Any]) -> UserConfiguration:
             year=year,
             start_date=start_date,
             end_date=end_date
-        )
+        ),
+        print_results=args.get('print_results', False)
     )
 
 def get_user_arguments() -> UserConfiguration:

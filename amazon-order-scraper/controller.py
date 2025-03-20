@@ -41,6 +41,7 @@ def scrape_invoices(driver, order_summaries):
 
 def parse_amazon_transactions_for_year(driver, filter : OrderFilter):
     # Start on the generic per-year page to see how many orders there are
+    print(f"Scraping transactions for year {filter.year}...")
     order_count = load_order_page_and_get_order_count_for_year(driver, filter.year)
     order_summaries = collect_order_summaries(driver, filter.year, order_count)
     order_summaries = filter_order_summaries(order_summaries, filter)
@@ -49,4 +50,5 @@ def parse_amazon_transactions_for_year(driver, filter : OrderFilter):
         print(f"No orders found in given date-range: {filter.start_date} to {filter.end_date}")
         return []
     orders = scrape_invoices(driver, order_summaries)
+    print(f"Scraped {len(orders)} orders")
     return orders
