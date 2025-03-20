@@ -19,6 +19,7 @@ from .scrape_invoice import parse_invoice
 from .config import *
 
 def scrape_order_summaries(driver, url):
+    driver.get(url)
     order_containers = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@class, 'order-header')]"))
     )
@@ -77,6 +78,7 @@ def scrape_transaction_urls(driver, url):
 def load_order_page_and_get_order_count_for_year(driver, year : str):
     wait = WebDriverWait(driver, TIMEOUT_S)
 
+    # TODO Logging print(target_page)
     driver.get(f"https://www.amazon.com/your-orders/orders?timeFilter=year-{year}")
     orders_text_element = wait.until(
         EC.visibility_of_element_located(
