@@ -1,4 +1,4 @@
-from .scrape import parse_amazon_transactions_for_year
+from .controller import parse_amazon_transactions_for_year
 from .driver import do_manual_amazon_login, make_headless_driver, \
                     login_to_amazon_from_cookies
 
