@@ -1,35 +1,35 @@
 from rich.progress import Progress
 
-from .scrape_order_list import load_order_page_and_get_order_count_for_year, scrape_transaction_urls
+from .scrape_order_list import load_order_page_and_get_order_count_for_year, scrape_order_summaries
 from .scrape_invoice import parse_invoice
 
-def collect_invoice_urls(driver, year : str, order_count : int):
-    invoice_urls = []
+def collect_order_summaries(driver, year : str, order_count : int):
+    all_summaries = []
     with Progress() as progress:
         status_bar = progress.add_task("[blue]Collecting Amazon invoices...",
                                        total=order_count)
-        while len(invoice_urls) < order_count:
-            target_page = f"https://www.amazon.com/your-orders/orders?timeFilter=year-{year}&startIndex={len(invoice_urls)}"
-            urls = scrape_transaction_urls(driver, target_page)
-            progress.update(status_bar, advance=len(urls))
-            invoice_urls.extend(urls)
+        while len(all_summaries) < order_count:
+            target_page = f"https://www.amazon.com/your-orders/orders?timeFilter=year-{year}&startIndex={len(all_summaries)}"
+            summaries = scrape_order_summaries(driver, target_page)
+            progress.update(status_bar, advance=len(summaries))
+            all_summaries.extend(summaries)
         assert progress.finished
-    return invoice_urls
+    return all_summaries
 
 
-def filter_invoice_urls(urls):
+def filter_order_summaries(summaries):
     # TODO filter by date
-    return urls
+    return summaries
 
 
-def scrape_invoices(driver, invoice_urls):
+def scrape_invoices(driver, order_summaries):
     parsed_orders = []
     with Progress() as progress:
         status_bar = progress.add_task("[blue]Scraping Amazon transactions...",
-                                       total=len(invoice_urls))
+                                       total=len(order_summaries))
 
-        for url in invoice_urls:
-            parsed_orders.append(parse_invoice(driver, url))
+        for summary in order_summaries:
+            parsed_orders.append(parse_invoice(driver, summary.invoice_url))
             progress.update(status_bar, advance=1)
         assert progress.finished
     return parsed_orders
@@ -38,7 +38,7 @@ def scrape_invoices(driver, invoice_urls):
 def parse_amazon_transactions_for_year(driver, year : str):
     # Start on the generic per-year page to see how many orders there are
     order_count = load_order_page_and_get_order_count_for_year(driver, year)
-    invoice_urls = collect_invoice_urls(driver, year, order_count)
-    invoice_urls = filter_invoice_urls(invoice_urls)
-    orders = scrape_invoices(driver, invoice_urls)
+    order_summaries = collect_order_summaries(driver, year, order_count)
+    order_summaries = filter_order_summaries(order_summaries)
+    orders = scrape_invoices(driver, order_summaries)
     return orders
