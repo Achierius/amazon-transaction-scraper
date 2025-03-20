@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -40,3 +40,23 @@ class Order:
         for item in self.items:
             order_str += f"  {str(item)}\n"
         return order_str
+
+
+@dataclass
+class OrderSummary:
+    order_date: datetime
+    total: float
+    order_number: str
+    invoice_url: str
+    delivered: bool
+
+    def __str__(self):
+        delivered_str = "Delivered" if delivered else "Not Delivered"
+        order_str = (
+            f"Order Summary for Order #{self.order_number}\n"
+            f"Invoice Link: <{self.invoice_url}>\n"
+            f"Order Date: {self.order_date.strftime('%Y-%m-%d')}\n"
+            f"Order Total: ${self.total:.2f}\n"
+            f"Status: {delivered_str}\n"
+        )
+
