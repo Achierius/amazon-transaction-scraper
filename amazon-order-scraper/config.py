@@ -24,6 +24,9 @@ class OrderFilter:
 class UserConfiguration:
     filter : OrderFilter
     print_results : bool
+    # If these are not set, then the script will not create these CSVs
+    item_csv_path : Optional[str]
+    order_csv_path : Optional[str]
 
 def _get_raw_user_arguments() -> Dict[str, Any]:
     parser = argparse.ArgumentParser(
@@ -52,6 +55,10 @@ def _get_raw_user_arguments() -> Dict[str, Any]:
     # Output options
     parser.add_argument("--print-results", action="store_true",
                        help="Print results to stdout")
+    parser.add_argument("--dump-items", metavar="FILE",
+                       help="Path to CSV file where item data should be exported")
+    parser.add_argument("--dump-orders", metavar="FILE",
+                       help="Path to CSV file where order summary data should be exported")
     
     args = parser.parse_args()
     
@@ -122,7 +129,9 @@ def _parse_user_arguments(args: Dict[str, Any]) -> UserConfiguration:
             start_date=start_date,
             end_date=end_date
         ),
-        print_results=args.get('print_results', False)
+        print_results=args.get('print_results', False),
+        item_csv_path=args.get('dump_items'),
+        order_csv_path=args.get('dump_orders')
     )
 
 def get_user_arguments() -> UserConfiguration:
