@@ -1,13 +1,12 @@
 # Project Summary
 
 Amazon no longer lets you dump order data to a CSV, at least not on a reasonable timescale.  
-This project provides a utility which will scrape your Amazon or
+This project provides a utility which will scrape your Amazon orders for you.
+
+I ended up using Aider less than I expected, but this is still probably useful documentation,
+for now.
 
 # Technical Details
-
-## User interface
-
-The user interface is a simple argparse
 
 ## Set up headless browser logged into Amazon
 
@@ -72,3 +71,4 @@ After that, we just take everything and put it into a CSV -- easy peasy!
   - `scrape_invoice.py`: scrapes/parses invoice pages
   - `scrape_order_list.py`: scrapes/parses order summaries from the Your Orders tab
   - `controller.py`: manages logic & user-reporting
+  - `serialization.py`: handles exporting to csv
