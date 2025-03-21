@@ -30,7 +30,10 @@ def scrape_invoices(driver, order_summaries):
                                        total=len(order_summaries))
 
         for summary in order_summaries:
-            order = parse_invoice(driver, summary.invoice_url)
+            try:
+                order = parse_invoice(driver, summary.invoice_url)
+            except Exception as e:
+                print(f"error while parsing invoice {summary.invoice_url}\n  {e}")
             progress.update(status_bar, advance=1)
             if EXCLUDE_INVOICES_WITHOUT_CREDIT_CARD_CHARGE and not order.charges:
                 continue
