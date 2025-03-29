@@ -37,6 +37,9 @@ def parse_order_row(row, shipping_date: Optional[datetime]) -> Item:
     supplied_by = supplied_by_match.group(1).strip() if supplied_by_match else "N/A"
 
     unit_price_text = row.find_element(By.XPATH, ".//td[2]").text
+    grocery_price_match = re.search('\(\$[\d,]+\.\d+\/\S+\)\s*\$([\d,]+\.\d\d)', unit_price_text)
+    if grocery_price_match:
+        unit_price_text = grocery_price_match.group(1).strip()
     if unit_price_text:
         unit_price = float(re.sub(r'[^\d.]', '', unit_price_text))
     else:
