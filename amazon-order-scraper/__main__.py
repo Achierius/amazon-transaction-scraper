@@ -7,6 +7,7 @@ from .driver import do_manual_amazon_login, make_headless_driver, \
                     login_to_amazon_from_cookies
 from .datatypes import Order
 from .config import get_user_arguments
+from .scrape_invoice import parse_invoice
 from .serialization import store_items_to_csv, store_orders_to_csv
 
 
@@ -25,7 +26,10 @@ def main():
     login_to_amazon_from_cookies(driver, login_cookie_file_path)
 
     try:
-        orders = parse_amazon_transactions_for_year(driver, userconf.filter)
+        if userconf.test_invoice_path:
+            print(parse_invoice(driver, userconf.test_invoice_path))
+        else:
+            orders = parse_amazon_transactions_for_year(driver, userconf.filter)
     finally:
         driver.quit()
 

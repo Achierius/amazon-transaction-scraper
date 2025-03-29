@@ -27,6 +27,8 @@ class UserConfiguration:
     # If these are not set, then the script will not create these CSVs
     item_csv_path : Optional[str]
     order_csv_path : Optional[str]
+    # If this is set, the script will do nothing but parse the invoice
+    test_invoice_path : Optional[str]
 
 def _get_raw_user_arguments() -> Dict[str, Any]:
     parser = argparse.ArgumentParser(
@@ -34,6 +36,8 @@ def _get_raw_user_arguments() -> Dict[str, Any]:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     
+    parser.add_argument("--test-invoice-path", help="URL of invoice to parse (and then exit)")
+
     # Year argument
     parser.add_argument("-y", "--year", required=True, 
                         help="Year to scrape orders from (e.g., 2025)")
@@ -131,7 +135,8 @@ def _parse_user_arguments(args: Dict[str, Any]) -> UserConfiguration:
         ),
         print_results=args.get('print_results', False),
         item_csv_path=args.get('dump_items'),
-        order_csv_path=args.get('dump_orders')
+        order_csv_path=args.get('dump_orders'),
+        test_invoice_path=args.get('test_invoice_path')
     )
 
 def get_user_arguments() -> UserConfiguration:
