@@ -93,8 +93,11 @@ def parse_card_charges(driver) -> List[CardCharge]:
     rows = transactions_table.find_elements(By.XPATH, ".//tr")
     for row in rows:
         text = row.text
+
+        amount_text = re.search(r'\$(\d[\d,]*.\d\d)', text).group(1)
+        amount = float(re.sub(r'[^\d.]', '', amount_text))
+
         card_digits = re.search(r'ending in (\d\d\d\d)', text).group(1)
-        amount = float(re.search(r'\$(\d+.\d\d)', text).group(1))
         date_text = re.search(r'(\S+ \d+, 20\d\d)', text).group(1)
         date = datetime.strptime(date_text, '%B %d, %Y')
         
