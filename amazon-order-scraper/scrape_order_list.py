@@ -18,11 +18,22 @@ from .datatypes import Item, Order, OrderSummary
 from .scrape_invoice import parse_invoice
 from .config import *
 
+
 def scrape_order_summaries(driver, url):
     driver.get(url)
     order_containers = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@class, 'order-header')]"))
     )
+
+    def convert_invoice_url_to_legacy_url(url: str) -> str:
+        matches : list[str] = re.findall(r'orderID=(\d{3}-\d{7}-\d{7})', url)
+        if len(matches) != 1:
+            raise ValueError(f"expected one orderId match in \"{url}\" but got {matches}")
+        order_id = matches[0]
+        # Thanks, reddit
+        # https://www.reddit.com/r/amazonprime/comments/1ly0q5n/new_2025_view_invoice_is_now_graphical_instead_of/
+        legacy_url = f"https://www.amazon.com/gp/legacy/css/summary/print.html/ref=ppx_printOD_rd_dt_b_fresh_fopo_pos_rd?orderID={order_id}"
+        return legacy_url
 
     orders = []
     for container in order_containers:
@@ -48,7 +59,10 @@ def scrape_order_summaries(driver, url):
             delivered = False
     
         invoice_link_elem = container.find_element(By.XPATH, ".//a[contains(text(), 'View invoice')]")
-        invoice_url = invoice_link_elem.get_attribute("href")
+        raw_invoice_url = invoice_link_elem.get_attribute("href")
+        if not raw_invoice_url:
+            raise ValueError(f"could not get href from invoice_link_elem \"{invoice_link_elem}\"")
+        invoice_url = convert_invoice_url_to_legacy_url(raw_invoice_url)
         
         summary = OrderSummary(
             order_date=order_date,
